@@ -9,10 +9,6 @@ use App\Models\Article;
 
 class ArticleController extends Controller
 {
-    private static $rule = [
-            'title' => 'required|string|unique:articles|max:255',
-            'body' => 'required',
-    ];
     private static $messages=[
             'required'=>'El campo :attribute es obligatorio.',
             'unique'=> 'El campo title es unico',
@@ -24,11 +20,20 @@ class ArticleController extends Controller
         return response()->json(new ArticleResource($article),200);
     }
     public function store(Request $request){
-        $request->validate(self::$rule,self::$messages);
+        $request->validate([
+            'title' => 'required|string|unique:articles|max:255',
+            'body' => 'required',
+            'category_id' => 'required|exists:categories,id',
+        ],self::$messages);
         $article = Article::create($request->all());
         return response()->json($article, 201);
     }
     public function update(Request $request, Article $article){
+        $request->validate([
+            'title' => 'required|string|unique:articles,title,'.$article->id.'|max:255',
+            'body' => 'required',
+            'category_id' => 'required|exists:categories,id',
+        ],self::$messages);
         $article->update($request->all());
         return response()->json($article, 200);
     }
